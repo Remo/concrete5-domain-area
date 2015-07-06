@@ -1,6 +1,6 @@
 <?php
 
-namespace Concrete\Package\DomainArea\Models;
+namespace Concrete\Package\DomainArea\Src;
 
 use Loader,
     Page,
@@ -20,11 +20,14 @@ class ContentDomainArea
      * the current domain.
      * 
      * @param string $arHandle
+     * @param boolean $global
      */
-    public function __construct($arHandle)
+    public function __construct($arHandle, $global = false)
     {
         $this->arHandle = $arHandle;
         $c = Page::getCurrentPage();
+        
+        $areaClassName = $global ? 'GlobalArea' : 'Area';
 
         // get domains
         // @TODO move this into a separate model
@@ -35,7 +38,7 @@ class ContentDomainArea
             $domains = $db->getAll('SELECT domain FROM DomainAreaDomains ORDER BY domain');
 
             foreach ($domains as $domain) {
-                $this->areas[] = new Area($this->arHandle . ' (' . $domain['domain'] . ')');
+                $this->areas[] = new $areaClassName($this->arHandle . ' (' . $domain['domain'] . ')');
             }
         } else {
             $httpHost = $_SERVER['HTTP_HOST'];
@@ -44,7 +47,7 @@ class ContentDomainArea
                 $domains = $db->getAll('SELECT domain FROM DomainAreaDomains WHERE domain = ?', array($currentDomain));
 
                 foreach ($domains as $domain) {
-                    $this->areas[] = new Area($this->arHandle . ' (' . $domain['domain'] . ')');
+                    $this->areas[] = new $areaClassName($this->arHandle . ' (' . $domain['domain'] . ')');
                 }
             }
         }
