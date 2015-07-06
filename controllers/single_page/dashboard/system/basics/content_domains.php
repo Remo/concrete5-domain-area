@@ -34,7 +34,7 @@ class ContentDomains extends DashboardPageController
     {
         if ($this->token->validate('delete')) {
             $db = Loader::db();
-            $db->Execute('DELETE FROM DomainAreaDomains WHERE domain = ?', array($domain));
+            $db->Execute('DELETE FROM DomainAreaDomains WHERE domain = ?', array(base64_decode($domain)));
             $this->redirect('/dashboard/system/basics/content_domains', 'domain_deleted');
         } else {
             $this->set('error', array($this->token->getErrorMessage()));

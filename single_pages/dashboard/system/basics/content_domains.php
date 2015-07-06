@@ -14,7 +14,7 @@
                 <tr>
                     <td><?php echo $domain['domain']; ?></td>
                     <td width="60">
-                        <?php echo $concrete_ui->button(t('Delete'), $view->url('/dashboard/system/basics/content_domains', 'delete', $domain['domain']) . '?' . $this->controller->token->getParameter('delete'), 'left', 'btn-xs'); ?>
+                        <?php echo $concrete_ui->button(t('Delete'), $view->url('/dashboard/system/basics/content_domains', 'delete', base64_encode($domain['domain'])) . '?' . $this->controller->token->getParameter('delete'), 'left', 'btn-xs'); ?>
                     </td>
                 </tr>
             <?php } ?>
