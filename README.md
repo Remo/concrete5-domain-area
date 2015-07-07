@@ -23,4 +23,3 @@ Todo
 
 * Move DB access into model
 * Add some kind of autoloading to avoid `Loader::model`
-* Support for domain specific global areas
