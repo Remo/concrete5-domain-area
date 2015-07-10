@@ -12,7 +12,7 @@ class Controller extends \Concrete\Core\Package\Package
 
     protected $pkgHandle = 'domain_area';
     protected $appVersionRequired = '5.7.0.4';
-    protected $pkgVersion = '0.9';
+    protected $pkgVersion = '0.10';
 
     public function getPackageName()
     {

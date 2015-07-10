@@ -3,6 +3,8 @@
 namespace Concrete\Package\DomainArea\Controller\SinglePage\Dashboard\System\Basics;
 
 use \Concrete\Core\Page\Controller\DashboardPageController,
+    \Concrete\Core\Http\ResponseAssetGroup,
+    Database,
     Loader;
 
 class ContentDomains extends DashboardPageController
@@ -12,46 +14,60 @@ class ContentDomains extends DashboardPageController
 
     public function view()
     {
-        $db = Loader::db();
-        $domains = $db->getAll('SELECT domain FROM DomainAreaDomains ORDER BY domain');
-        $this->set('domains', $domains);
+        $r = ResponseAssetGroup::get();
+        $r->requireAsset('javascript', 'underscore');
     }
 
-    public function add()
+    public function data()
     {
-        if ($this->token->validate('add')) {
-            $db = Loader::db();
-            $domain = $this->post('domain');
-            $db->Execute('INSERT INTO DomainAreaDomains (domain) VALUES (?)', array($domain));
-            $this->redirect('/dashboard/system/basics/content_domains', 'domain_added');
-        } else {
-            $this->set('error', array($this->token->getErrorMessage()));
-            $this->view();
+        $db = Database::connection();
+        $return = new \stdClass();
+        $return->domains = new \stdClass();
+        $domains = $db->GetCol('SELECT domain FROM DomainAreaDomains ORDER BY domain');
+        foreach ($domains as $domain) {
+            $domainObject = $return->domains->$domain = new \stdClass();
+            $domainObject->aliases = $db->getCol('SELECT alias FROM DomainAreaDomainAliases WHERE domain = ? ORDER BY alias', [$domain]);
         }
+
+        header('Content-type: application/json');
+        echo json_encode($return);
+        die();
     }
 
-    public function delete($domain)
+    public function save()
     {
-        if ($this->token->validate('delete')) {
-            $db = Loader::db();
-            $db->Execute('DELETE FROM DomainAreaDomains WHERE domain = ?', array(base64_decode($domain)));
-            $this->redirect('/dashboard/system/basics/content_domains', 'domain_deleted');
+        $input = file_get_contents("php://input");
+        $object = json_decode($input);
+        $domains = $object->domains;
+
+        $db = Database::connection();
+
+        if (empty($domains)) {
+            $db->Execute('DELETE FROM DomainAreaDomains');
         } else {
-            $this->set('error', array($this->token->getErrorMessage()));
-            $this->view();
+            $existingDomains = [];
+            foreach ($domains as $domain => $item) {
+                $db->Execute('REPLACE INTO DomainAreaDomains (domain) VALUES (?)', $domain);
+                $existingDomains[] = '\'' . $domain . '\'';
+
+                if (empty($item->aliases)) {
+                    $db->Execute('DELETE FROM DomainAreaDomainAliases WHERE domain = ?', [$domain]);
+                } else {
+
+                    $existingAliases = [];
+                    foreach ($item->aliases as $alias) {
+
+                        $db->Execute('REPLACE INTO DomainAreaDomainAliases (domain, alias) VALUES (?, ?)', [$domain, $alias]);
+                        $existingAliases[] = '\'' . $alias . '\'';
+                    }
+                    $db->Execute('DELETE FROM DomainAreaDomainAliases WHERE domain = ? AND alias NOT IN (' . join(',', $existingAliases) . ')', [$domain]);
+
+                }
+            }
+            $db->Execute('DELETE FROM DomainAreaDomains WHERE domain NOT IN (' . join(',', $existingDomains) . ')');
         }
-    }
 
-    public function domain_added()
-    {
-        $this->set('message', t('Your domain has been added'));
-        $this->view();
-    }
-
-    public function domain_deleted()
-    {
-        $this->set('message', t('Your domain has been deleted'));
-        $this->view();
+        die();
     }
 
 }

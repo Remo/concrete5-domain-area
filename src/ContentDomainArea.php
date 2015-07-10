@@ -47,7 +47,9 @@ class ContentDomainArea
             $httpHost = $_SERVER['HTTP_HOST'];
             if (preg_match("/[^\.\/]+\.[^\.\/]+$/", $httpHost, $matches)) {
                 $currentDomain = $matches[0];
-                $domains = $db->getAll('SELECT domain FROM DomainAreaDomains WHERE domain = ?', array($currentDomain));
+                $domains = $db->getAll('SELECT domain FROM DomainAreaDomains WHERE domain = ?
+                  UNION ALL
+                  SELECT domain FROM DomainAreaDomainAliases WHERE alias = ?', [$currentDomain, $currentDomain]);
 
                 foreach ($domains as $domain) {
                     $this->areas[] = new $areaClassName($this->arHandle . ' (' . $domain['domain'] . ')');

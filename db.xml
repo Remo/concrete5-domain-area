@@ -2,7 +2,15 @@
 <schema version="0.3">
     <table name="DomainAreaDomains">
         <field name="domain" type="C" size="255">
-            <key />
+            <key/>
+        </field>
+    </table>
+    <table name="DomainAreaDomainAliases">
+        <field name="domain" type="C" size="255">
+            <key/>
+        </field>
+        <field name="alias" type="C" size="255">
+            <key/>
         </field>
     </table>
 </schema>
