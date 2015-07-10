@@ -11,6 +11,7 @@ class ContentDomainArea
 
     private $areas = [];
     private $arHandle;
+    private $global;
 
     /**
      * Creates areas depending on the current domain and the state of the page.
@@ -25,6 +26,8 @@ class ContentDomainArea
     public function __construct($arHandle, $global = false)
     {
         $this->arHandle = $arHandle;
+        $this->global = $global;
+
         $c = Page::getCurrentPage();
         
         $areaClassName = $global ? 'GlobalArea' : 'Area';
@@ -70,11 +73,16 @@ class ContentDomainArea
      * @param Page $c
      * @param array $alternateBlockArray
      */
-    public function display($c, $alternateBlockArray = null)
+    public function display($c = null, $alternateBlockArray = null)
     {
         if (is_array($this->areas)) {
             foreach ($this->areas as $area) {
-                $area->display($c, $alternateBlockArray);
+                if ($this->global) {
+                    $area->display();
+                }
+                else {
+                    $area->display($c, $alternateBlockArray);
+                }
             }
         }
     }
